@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>FreeCar</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta property="og:title" content="Անվճար Մեքենա"/>
+    <meta property="og:image" content="http://freecar.am/big_logo.png"/>
+    <meta property="og:site_name" content="Անվճար Մեքենա"/>
+    <meta property="og:description" content="Freecar.am կայքում կարողեք ծանոթանալ «Freecar» / «ԱնվճարՄեքենա» նախաձեռնությանը միացած քաղաքացիներին, ովքեր պատրաստ են նշված երթուղիներով տեղափոխել համապատասխան քանակով մարդկանց"/>
+    <meta property="og:url" content="http://freecar.am"/>
+
+    <!-- Le styles -->
+    <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.no-icons.min.css" rel="stylesheet">
+    <link href="http://netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.min.css" rel="stylesheet">
+    
+    
+    <!-- <link type="text/css" media="screen" rel="stylesheet" href="css/responsive-tables.css" /> -->
+
+    <link href="css/style.css" rel="stylesheet">
+    <!-- <link href="css/freecar.css" rel="stylesheet"> -->
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="js/vendor/html5shiv.js"></script>
+    <![endif]-->
+
+    <!-- Fav and touch icons -->
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="ico/apple-touch-icon-114-precomposed.png">
+      <link rel="apple-touch-icon-precomposed" sizes="72x72" href="ico/apple-touch-icon-72-precomposed.png">
+                    <link rel="apple-touch-icon-precomposed" href="ico/apple-touch-icon-57-precomposed.png">
+                                   <link rel="shortcut icon" href="ico/favicon.png">
+  </head>
+  <body>
+   
+      <!-- Templates -->
+      <script type="text/template" id="add-route-template">
+      <a href="#/new" class="btn btn-primary">Ավելացնել երթուղի</a>
+      <a href="#" class="logout btn pull-right">Ելք &mdash; Բոլոր երթուղիները</a>
+      <hr />
+      </script>
+
+      <script type="text/template" id="route-list-template">
+      <a href="#/new" class="btn btn-primary">Ավելացնել երթուղի</a>
+      <a href="#" class="logout btn pull-right">Ելք &mdash; Բոլոր երթուղիները</a>
+      <div style="float:right"></div>
+      <hr />
+      <table class="table table-striped table-hover">
+        <thead>
+          <tr>
+            <th colspan="2">Երթուղի</th>
+            <th>Վարորդ</th>
+            <th>Ժամը</th>
+            <th>Հեռախոս</th>
+            <th>Այլ ինֆորմացիա</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% _.each(routes, function(route) { %>
+            <tr>
+              <td><%= route.get('from') %></td>
+              <td><%= route.get('to') %></td>
+              <td><%= route.get('name') %></td>
+              <td><%= route.get('time') %></td>
+              <td><%= route.get('phone') %></td>
+              <td><%= route.get('comment') %></td>
+              <td><a href="#/edit/<%= route.id %>" class="btn">Խմբագրել</a> <a href="#/reviews/<%= route.id %>" class="btn">Կարծիքներ</a></td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+
+      </script>     
+
+      <script type="text/template" id="edit-route-template">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+          <%= route ? 'Խմբագրել' : 'Ստեղծել' %> երթուղի
+        </div>
+
+        <form class="edit-route-form form-horizontal">
+          <div class="modal-body">
+            <fieldset>
+              <div class="control-group">
+                <label class="control-label">Վարորդ</label>
+                <div class="controls">
+                  <input type="text" required="required" class="name" name="name" placeholder="անուն" value="<%= route ? route.get('name'):''%>" />
+                </div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Երթուղի</label>
+                <div class="controls">
+                  <textarea rows="4" required="required" class="from" name="from" placeholder="օրինակ՝ Նժդեհ, Արշակունյաց, Լուսավորիչ, Պարոնյան, Պռոշյան, Բաղրամյան"><%= route ? route.get('from'):''%></textarea>
+                  <span class="help-inline"><small>Հայատառ գրելը ողջունվում է</small></span>
+                </div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Վերջնակետ</label>
+                <div class="controls">
+                  <input type="text" required="required" class="to" name="to" placeholder="օրինակ՝ Կոմիտաս" value="<%= route ? route.get('to'):''%>" />
+                </div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Ժամը</label>
+                <div class="controls">
+                  <input type="time" required="required" class="time" name="time" value="<%= route ? route.get('time'):''%>" />
+                </div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Հեռախոս</label>
+                <div class="controls">
+                  <input type="tel" required="required" class="phone" name="phone" value="<%= route ? route.get('phone'):''%>" />
+                </div>
+              </div>
+              <div class="control-group">
+                <label class="control-label">Այլ. ինֆո.</label>
+                <div class="controls">
+                  <input type="text" class="comment" name="comment" value="<%= route ? route.get('comment'):''%>" />
+                </div>
+              </div>
+            </fieldset>
+          </div>
+          <div class="modal-footer">
+            <% if(route) { %>
+              <input type="hidden" class="id" value="<%= route.id %>" />
+            <% } %>
+            <button type="submit" class="btn btn-primary" id="uploadbutton"><%= route ? 'Թարմացնել' : 'Ստեղծել' %></button>
+            <a href="#" class="btn" data-dismiss="modal">Փակել</a>
+            <% if(route) { %>
+              <button style="float:right" type="submit" class="btn btn-danger delete">Հեռացնել</button>
+            <% } %>  
+          </div>
+        </form>
+      
+      </script>
+
+      <script type="text/template" id="public-view-template">
+      <div class="alert fade in text-wrapper hidden-phone">
+
+        <button type="button" class="close" data-dismiss="alert">×</button>
+      <h2>Ծանոթություն</h2>
+      <p>
+          «Անվճար մեքենա» կամ աշխարհում ընդունված Carpool անվամբ նախաձեռնությունը մի մեքենայի համատեղ օգտագործումն է:
+          Այսինքն՝ եթե մեքենայովդ ինչ–որ տեղ ես գնում, հետդ անվճար տանում ես նաև նույն ուղղությամբ գնացող այլ
+          ուղևորների։
+      </p>
+
+      <p>«Անվճար մեքենա» նախաձեռնության նպատակներն են.</p>
+      <ul>
+          <li>Oգնել մարդկանց, ովքեր չեն ցանկանում վճարել ավել քան 100 ՀՀ դրամ քաղաքային տրանսպորտի համար:</li>
+          <li>Թեթևացնել քաղաքային տրանսպորտի ծանրաբեռնվածությունը, որի շնորհիվ ավելի քիչ կաղտոտվի քաղաքի օդն ու
+              ավելի քիչ վառելիք կայրվի։
+          </li>
+          <li>Ուղևորների ընկերակցությունը ճանապարհն ավելի հաճելի է դարձնում։</li>
+      </ul>
+      <p>
+          Freecar.am կայքում կարող եք ծանոթանալ նախաձեռնությանը միացած քաղաքացիներին, ովքեր պատրաստ են նշված
+          երթուղիներով տեղափոխել համապատասխան քանակով մարդկանց:
+          Մեքենայի վրա <a href="http://freecar.am/freecar.pdf" target="_blank">այս</a> տարբերանշանը փակցնելու դեպքում քաղաքացիները կկարողանան հեշտությամբ տարբերակել
+          այն և օգտվել «Անվճար մեքենա»-յի ծառայություններից:
+      </p>
+      </div>
+      
+      <legend>Բոլոր Երթուղիները</legend>
+      <div class="back-to-routes-container">
+        <button class="btn back-to-routes">Մաքրել '<span></span>' ֆիլտրը</button>
+      </div>
+      <div class="route-table-wrapper">
+        <table class="table-route-list table table-striped table-bordered table-hover responsive" id="routestable">
+          <thead>
+            <tr>
+              <th>Երթուղի</th>
+              <th>Վարորդ</th>
+              <th>Ժամը</th>
+              <th>Հեռախոս</th>
+              <th>Այլ ինֆորմացիա</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% _.each(routes, function(route) { %>
+              <tr>
+                <td class="route-name"><a href="#" class="use-this-filter"><%= route.get('from') %></a> &mdash; <a href="#" class="use-this-filter"><%= route.get('to') %></a></td>
+                <td class="author">
+                    <% if(route.get('fbid')) { %>
+                    <a target="_blank" href='http://facebook.com/<%= route.get("fbid") %>'><%= fbImage(route.get('fbid')) %></a>
+                    <a target="_blank" href='http://facebook.com/<%= route.get("fbid") %>'><%= route.get('name') %></a>
+                    <% } else { %>
+                    <%= route.get('name') %>
+                    <% } %>
+                </td>
+                <td class="time"><%= route.get('time') %></td>
+                <td class="phone"><%= route.get('phone') %></td>
+                <td class="comment"><%= route.get('comment') %></td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal hide fade" id="loginModal">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+
+          <ul class="nav nav-tabs">
+            <li class="active"><a href="#login-form" data-toggle="tab">Մուտք</a></li>
+            <li><a href="#signup-form" data-toggle="tab">Գրանցվել</a></li>
+          </ul>
+
+        </div>
+        <div class="modal-body">
+          <div class="tab-content">
+            <div class="tab-pane active" id="login-form">
+              <form class="login-form form-horizontal">
+                <div class="error alert alert-error hide">
+                  <button type="button" class="close" onclick="$('.alert').hide()">&times;</button>Օգտատերի անունը կամ գաղտնաբառը սխալ է, կրկի՜ն փորձիր:
+                </div>
+                <div class="control-group fb-connect-button-wrapper">
+                 <a href="#" class="fb-login"><img src="img/login_fb.png"></a>
+                </div>
+                <div class="control-group">
+                  <label class="control-label">Մուտքանուն</label>
+                  <div class="controls">
+                     <input type="text" id="login-username" placeholder="" />
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label class="control-label">Գաղտնաբառ</label>
+                  <div class="controls">
+                     <input type="password" id="login-password" placeholder="" />
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label class="control-label"></label>
+                  <div class="controls">
+                    <button class="btn btn-primary">Մուտք</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="tab-pane" id="signup-form">
+              <form class="signup-form form-horizontal">
+                <div class="error alert alert-error" style="display:none">
+                  <button type="button" class="close" data-dismiss="alert">&times;</button>
+                </div>
+                <div class="control-group">
+                  <label class="control-label">Մուտքանուն</label>
+                  <div class="controls">
+                     <input type="text" id="signup-username" placeholder="" />
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label class="control-label">Ստեղծել գաղտնաբառ</label>
+                  <div class="controls">
+                     <input type="password" id="signup-password" placeholder="" />
+                  </div>
+                </div>
+                <div class="control-group">
+                  <label class="control-label"></label>
+                  <div class="controls">
+                    <button class="btn btn-primary">Գրանցվել</button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      </script>
+
+      <script type="text/template" id="reviews-route-template">
+        <div class="fb-comments" data-width="470" data-num-posts="10"></div>
+      </script>
+
+      <!-- App UI -->
+      <div class="navbar navbar-fixed-top">
+        <div class="navbar-inner">
+          <div class="container">
+            <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="brand" href="#"><img src="img/logo-navbar.png" alt="Freecar.am">FreeCar.am <small class="hidden-phone"> &mdash; Անվճար տրանսպորտի ուղեցույց</small></a>
+            <div class="nav-collapse collapse">
+              <!-- <ul class="nav">
+                <li class="active"><a href="#">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
+                  <ul class="dropdown-menu">
+                    <li><a href="#">Action</a></li>
+                    <li><a href="#">Another action</a></li>
+                    <li><a href="#">Something else here</a></li>
+                    <li class="divider"></li>
+                    <li class="nav-header">Nav header</li>
+                    <li><a href="#">Separated link</a></li>
+                    <li><a href="#">One more separated link</a></li>
+                  </ul>
+                </li>
+              </ul> -->
+              <!-- <ul class="nav pull-right">
+                <li></li>
+              </ul> -->
+              <!-- <form class="navbar-form pull-right">
+                <input class="span2" type="text" placeholder="Email">
+                <input class="span2" type="password" placeholder="Password">
+                <button type="submit" class="btn">Sign in</button>
+              </form> -->
+              <a id="login-button" href="#loginModal" role="button" data-toggle="modal" class="btn pull-right btn-success">Մասնակցել</a>
+            </div><!--/.nav-collapse -->
+          </div>
+        </div>
+      </div>
+
+      <div id="freecar" class="container">
+        
+          <div class="content">
+            <img src="img/ajax-loader.gif" class="content-loader" alt="load">
+          </div>
+      </div>
+
+      <footer>
+        <div id="credits">
+            Ստեղծվել է հայ երիտասարդության կողմից 2013թ.
+        </div>
+
+          <ul class="footer-links">
+              <li><a href="https://www.facebook.com/freecaram" target="_blank">Մենք Facebook-ում</a></li>
+              <li class="muted">·</li>
+              <li><a href="http://freecar.am/freecar.pdf" target="_blank">Լոգոյի տպելու տարբերակը</a></li>
+              <li class="muted">·</li>
+              <li><a href="https://github.com/freecar/web" target="_blank">freecar-ը opensource է</a></li>
+          </ul>
+      </footer>
+      
+      <div class="modal hide fade" id="editModal">
+      </div>
+
+      <!--<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>-->
+      <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.9.1.min.js"><\/script>')</script>
+      <!-- <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script> -->
+      <script src="js/vendor/bootstrap.min.js"></script>
+      <script src="js/vendor/underscore-min.js"></script>
+      <script type="text/javascript" src="http://www.parsecdn.com/js/parse-1.2.7.min.js"></script>
+      <script type="text/javascript" src="js/vendor/load-image.min.js"></script>
+      <!-- <script type="text/javascript" src="js/vendor/responsive-tables.js"></script>    -->  
+      <script type="text/javascript" src="js/vendor/jquery.dataTables.min.js"></script>
+      <script type="text/javascript" src="js/freecar.js"></script>
+
+      <!-- Facebook -->
+      <div id="fb-root"></div>
+      <script>
+        window.fbAsyncInit = function() {
+          // init the FB JS SDK
+          Parse.FacebookUtils.init({
+            appId      : '173398656175974',                        // App ID from the app dashboard
+            channelUrl : '//connect.facebook.net/en_US/all.js', // Channel file for x-domain comms
+            status     : false,                                 // Check Facebook Login status
+            xfbml      : true                                  // Look for social plugins on the page
+          });
+
+          // Additional initialization code such as adding Event Listeners goes here
+        };
+
+        // Load the SDK asynchronously
+        (function(d, s, id){
+           var js, fjs = d.getElementsByTagName(s)[0];
+           if (d.getElementById(id)) {return;}
+           js = d.createElement(s); js.id = id;
+           js.src = "//connect.facebook.net/en_US/all.js";
+           fjs.parentNode.insertBefore(js, fjs);
+         }(document, 'script', 'facebook-jssdk'));
+
+        function fbImage(fbid) {
+          var ret = ""
+          if (typeof fbid !== "undefined") {
+            ret = '<img height="20%" width="20%" src="http://graph.facebook.com/' + fbid + '/picture" />';
+          }
+          return ret;
+        };
+
+        <!-- UserVoice JavaScript SDK (only needed once on a page) -->
+        (function(){var uv=document.createElement('script');uv.type='text/javascript';uv.async=true;uv.src='//widget.uservoice.com/jQR6WfVhTAHJoJaam1DJSQ.js';var s=document.getElementsByTagName('script')[0];s.parentNode.insertBefore(uv,s)})()
+
+        // A tab to launch the Classic Widget
+        UserVoice = window.UserVoice || [];
+        UserVoice.push(['showTab', 'classic_widget', {
+            mode: 'full',
+            primary_color: '#cc6d00',
+            link_color: '#007dbf',
+            default_mode: 'feedback',
+            forum_id: 216016,
+            tab_label: 'Կապ / Առաջարկություններ',
+            tab_color: '#cc6d00',
+            tab_position: 'middle-left',
+            tab_inverted: false
+        }]);
+      </script>
+
+      <!-- Google Analytics -->
+      <script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+              (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+                  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+          ga('create', 'UA-42629581-1', 'freecar.am');
+          ga('send', 'pageview');
+      </script>
+
+    </body>
+</html>
